@@ -2,8 +2,11 @@ name: Rainyun 自动签到
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # UTC+8 12点执行
+    - cron: '0 2 * * *'  # UTC 2:00 = 北京时间 10:00
   workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write
 
 jobs:
   sign-in:
@@ -66,3 +69,10 @@ jobs:
       - name: 清理临时文件
         run: rm -rf temp
         if: always()
+
+      - name: 保活提交（防止60天无活动被停用定时任务）
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keepalive $(date -u +%F-%H%M)"
+          git push
